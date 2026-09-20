@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh; padding: 20px; color: white;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { font-size: 24px; }
+        .logout { background: rgba(255,107,107,0.3); border: 1px solid #ff6b6b; color: white; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-size: 14px; }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px; padding: 25px; margin-bottom: 20px;
+        }
+        input {
+            width: 100%; padding: 15px;
+            border: none; border-radius: 12px;
+            background: rgba(255,255,255,0.15);
+            color: white; font-size: 16px;
+            margin-bottom: 12px; outline: none;
+        }
+        input::placeholder { color: rgba(255,255,255,0.6); }
+        button {
+            width: 100%; padding: 15px;
+            border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white; font-size: 16px; font-weight: bold;
+            cursor: pointer;
+        }
+        .order {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 15px;
+            margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .status-pending { color: #ffd93d; }
+        .status-success { color: #38ef7d; }
+        .status-failed { color: #ff6b6b; }
+        .url-box {
+            background: rgba(0,0,0,0.3);
+            padding: 12px; border-radius: 10px;
+            margin-top: 10px; word-break: break-all;
+            font-size: 13px; display: none;
+        }
+        .url-box.show { display: block; }
+        .copy-btn {
+            background: #4facfe; border: none; color: white;
+            padding: 6px 12px; border-radius: 8px;
+            font-size: 12px; margin-top: 8px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ Admin Dashboard</h1>
+            <a href="/admin/logout" class="logout">Logout</a>
+        </div>
+
+        <div class="card">
+            <h3>✨ Create Payment Link</h3>
+            <br>
+            <input type="number" id="amount" placeholder="Amount (₹)" required>
+            <input type="text" id="name" placeholder="Customer name (optional)">
+            <button onclick="createOrder()">Generate Payment Link</button>
+            <div class="url-box" id="urlBox"></div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Recent Orders</h3>
+            <br>
+            {% if orders %}
+                {% for oid, o in orders.items() %}
+                <div class="order">
+                    <div>
+                        <strong>{{ oid }}</strong><br>
+                        <small>{{ o.name }} — ₹{{ o.amount }}</small>
+                    </div>
+                    <span class="status-{{ o.status }}">
+                        {% if o.status == 'success' %}✅ Success
+                        {% elif o.status == 'pending' %}⏳ Pending
+                        {% else %}❌ Failed{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>Koi order nahi hai abhi.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        async function createOrder() {
+            const amount = document.getElementById('amount').value;
+            const name = document.getElementById('name').value || 'Customer';
+            if (!amount) return alert('Amount daalo!');
+
+            const res = await fetch('/admin/create', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `amount=${amount}&name=${name}`
+            });
+            const data = await res.json();
+            if (data.success) {
+                const box = document.getElementById('urlBox');
+                box.classList.add('show');
+                box.innerHTML = `<strong>🔗 Payment URL:</strong><br>${data.full_url}
+                    <br><button class="copy-btn" onclick="navigator.clipboard.writeText('${data.full_url}'); this.textContent='Copied ✅'">Copy Link</button>`;
+                document.getElementById('amount').value = '';
+                document.getElementById('name').value = '';
+            } else {
+                alert(data.error);
+            }
+        }
+    </script>
+</body>
+  </html>
