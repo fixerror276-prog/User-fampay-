@@ -1,5 +1,5 @@
 """
-FamPay Gateway - Anime Video Background Version
+FamPay Gateway - Fixed Template Path Version
 """
 
 import os
@@ -9,7 +9,9 @@ import requests
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 
-app = Flask(__name__)
+# ── FIX: Template folder path ───────────────────────────
+TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "templates")
+app = Flask(__name__, template_folder=TEMPLATE_DIR)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-please")
 
 # ── CONFIG ──────────────────────────────────────────────
@@ -17,7 +19,7 @@ ADMIN_PASSWORD  = os.environ.get("ADMIN_PASSWORD", "mynk2007")
 PRIVATE_API_URL = os.environ.get("PRIVATE_API_URL", "https://fam-working.vercel.app/api/fampay")
 UPI_ID          = os.environ.get("UPI_ID", "pankaj00010@fam")
 UPI_NAME        = os.environ.get("UPI_NAME", "FamPay Payment")
-PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "57671279-30fce8eeb3de1f13286e13532")
+PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "57671279-30fcee8eb3de1f13286e13532")
 
 # ── IN-MEMORY DATABASE ──────────────────────────────────
 ORDERS = {}
